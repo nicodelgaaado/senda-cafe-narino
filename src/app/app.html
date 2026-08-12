@@ -74,7 +74,7 @@
     }
 
     @case ('catalogo') {
-      <section class="catalog-head section-shell"><p>Inventario varietal · Nariño</p><h1>Catálogo de<br>variedades.</h1><div class="catalog-intro"><p>Variedades con nombre explícito en fuentes oficiales o de producción rural verificable. Clasificación: tradicionales, mejoradas y especiales.</p><span>{{ coffees.length }} fichas · verificado el 12 de agosto de 2026</span></div><div class="filters" role="group" aria-label="Filtrar por familia varietal">@for (item of ['Todas', 'Tradicionales', 'Mejoradas', 'Especiales']; track item) { <button [class.active]="filter() === item" (click)="setFilter($any(item))">{{ item }}</button> }</div></section>
+      <section class="catalog-head section-shell"><p>Inventario varietal · Nariño</p><h1>Catálogo de<br>variedades.</h1><div class="catalog-intro"><p>Explora cafés de Nariño por variedad y perfil.</p><span>{{ coffees.length }} fichas · verificado el 12 de agosto de 2026</span></div><div class="filters" role="group" aria-label="Filtrar por familia varietal">@for (item of ['Todas', 'Tradicionales', 'Mejoradas', 'Especiales']; track item) { <button [class.active]="filter() === item" (click)="setFilter($any(item))">{{ item }}</button> }</div></section>
       <section class="product-grid catalog-grid section-shell">
         @for (coffee of filteredCoffees(); track coffee.id) {
           <article class="product-card" (click)="openProduct(coffee)" tabindex="0">
@@ -83,8 +83,6 @@
           </article>
         }
       </section>
-      <section class="catalog-note"><span>Alcance verificado</span><p>La unión de las fuentes consultadas identifica {{ coffees.length }} nombres. La cartilla oficial registra además 953,46 ha como “otras variedades”, sin desagregarlas; no se crean fichas sin un nombre comprobable. Los precios son referencias minoristas por 250 g, no valores de subasta.</p></section>
-      <section class="catalog-sources section-shell"><h2>Fuentes del inventario y precios</h2><div><a href="https://narino.gov.co/wp-content/uploads/2025/09/Cartilla-Catedra-Cafe.pdf" target="_blank" rel="noopener">Cartilla Cátedra Café · Gobernación de Nariño y FNC, 2025 ↗</a><a href="https://www.adr.gov.co/cafe-el-turpial-asociacion-de-caficultores-de-cafe-especial-de-cumbitara-coffee/" target="_blank" rel="noopener">Agencia de Desarrollo Rural · Café El Turpial ↗</a><a href="https://www.cenicafe.org/es/publications/VARIEDADES_%281%29.pdf" target="_blank" rel="noopener">Cenicafé · Variedades de café ↗</a><a href="https://cafe18.com.co/tienda/cafe-tostado/regionales/narino" target="_blank" rel="noopener">Café 18 · referencia Nariño 500 g ↗</a><a href="https://www.cafe18.com.co/tienda/cafe-tostado/varietales" target="_blank" rel="noopener">Café 18 · referencia de varietales 250 g ↗</a><a href="https://cafetipica.com/products/cafe-bourbon-rosado-lavado-250gr" target="_blank" rel="noopener">Típica · Bourbon Rosado Nariño 250 g ↗</a></div></section>
     }
 
     @case ('detalle') {
@@ -140,9 +138,9 @@
 
 <footer>
   <div class="footer-brand"><span class="brand-mark"><i></i><i></i></span><h2>SENDA<small>CAFÉ DE NARIÑO</small></h2></div>
-  <p>Café de especialidad de Nariño, tostado en Pasto y distribuido en Colombia.</p>
+  <p>Café de especialidad de Nariño, distribuido en Colombia.</p>
   <div class="footer-links"><button (click)="navigate('catalogo')">Cafés</button><button (click)="navigate('origen')">Origen</button><button (click)="openAuth('login')">Mi cuenta</button><a href="mailto:hola@sendacafe.co">Contacto</a></div>
-  <div class="footer-bottom"><span>© 2026 Senda Café</span><span>Fotografías reales de Unsplash y Pexels</span><span>Pasto, Nariño · Colombia</span></div>
+  <div class="footer-bottom"><span>© 2026 Senda Café</span><span>Pasto, Nariño · Colombia</span></div>
 </footer>
 
 <nav class="bottom-nav mobile-only" aria-label="Navegación móvil"><button [class.active]="view() === 'inicio'" (click)="navigate('inicio')"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Inicio</span></button><button [class.active]="view() === 'catalogo'" (click)="navigate('catalogo')"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10"/></svg><span>Cafés</span></button><button (click)="cartOpen.set(true)"><svg viewBox="0 0 24 24"><path d="M6.5 8.5h11l1 12h-13l1-12ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Bolsa ({{ cartCount() }})</span></button><button (click)="user() ? logout() : openAuth('login')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>{{ user() ? user() : 'Cuenta' }}</span></button></nav>
