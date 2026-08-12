@@ -1,0 +1,181 @@
+<div class="announcement">Envío nacional sin costo desde $100.000</div>
+
+<header class="site-header">
+  <button class="icon-button mobile-only" aria-label="Abrir menú" (click)="mobileMenu.set(!mobileMenu())">
+    <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+  </button>
+  <button class="brand" (click)="navigate('inicio')" aria-label="Ir al inicio">
+    <span class="brand-mark"><i></i><i></i></span>
+    <span>SENDA<small>CAFÉ DE NARIÑO</small></span>
+  </button>
+  <nav class="desktop-nav" aria-label="Navegación principal">
+    <button [class.active]="view() === 'inicio'" (click)="navigate('inicio')">Inicio</button>
+    <button [class.active]="view() === 'catalogo'" (click)="navigate('catalogo')">Cafés</button>
+    <button [class.active]="view() === 'origen'" (click)="navigate('origen')">Origen</button>
+  </nav>
+  <div class="header-actions">
+    @if (user()) {
+      <button class="account desktop-account" (click)="logout()"><span class="avatar">{{ user()![0].toUpperCase() }}</span>{{ user() }}</button>
+    } @else {
+      <button class="account desktop-account" (click)="openAuth('login')">Ingresar</button>
+    }
+    <button class="bag-button" (click)="cartOpen.set(true)" aria-label="Abrir bolsa de compra">
+      <svg viewBox="0 0 24 24"><path d="M6.5 8.5h11l1 12h-13l1-12Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/></svg>
+      @if (cartCount()) { <span>{{ cartCount() }}</span> }
+    </button>
+  </div>
+</header>
+
+@if (mobileMenu()) {
+  <div class="mobile-menu">
+    <button (click)="navigate('inicio')">Inicio</button>
+    <button (click)="navigate('catalogo')">Catálogo</button>
+    <button (click)="navigate('origen')">Origen</button>
+    @if (user()) { <button (click)="logout()">Cerrar sesión · {{ user() }}</button> }
+    @else { <button (click)="openAuth('login')">Ingresar / crear cuenta</button> }
+  </div>
+}
+
+<main>
+  @switch (view()) {
+    @case ('inicio') {
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Café de origen<br>Nariño.</h1>
+          <p>Café de especialidad con información de finca, variedad y proceso.</p>
+          <button class="primary" (click)="navigate('catalogo')">Ver catálogo <span>→</span></button>
+          <div class="hero-proof"><b>100%</b> origen Nariño <i></i><b>{{ coffees.length }}</b> variedades registradas</div>
+        </div>
+      </section>
+
+      <section class="featured section-shell">
+        <div class="section-heading">
+          <div><h2>Cafés<br>destacados.</h2><p>Origen, variedad, proceso y perfil sensorial de cada lote.</p></div>
+          <button class="text-link" (click)="navigate('catalogo')">Ver catálogo →</button>
+        </div>
+        <div class="product-grid home-grid">
+          @for (coffee of coffees.slice(0, 3); track coffee.id) {
+            <article class="product-card" (click)="openProduct(coffee)" tabindex="0">
+              <div class="product-image"><img [src]="coffee.homeImage || coffee.image" [alt]="coffee.name"><span>{{ coffee.process }}</span><button (click)="$event.stopPropagation(); addToCart(coffee)" [attr.aria-label]="'Agregar ' + coffee.name">+</button></div>
+              <div class="product-meta"><small>{{ coffee.municipality }} · {{ coffee.altitude }}</small><h3>{{ coffee.name }}</h3><p>{{ coffee.notes.join(' · ') }}</p><strong>{{ formatPrice(coffee.price) }}</strong></div>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="origin-band">
+        <div class="origin-copy"><small>Nariño, Colombia</small><h2>Condiciones<br>de origen.</h2><p>La altitud, los suelos volcánicos y la amplitud térmica favorecen una maduración lenta y perfiles de alta acidez y dulzor.</p><button class="secondary" (click)="navigate('origen')">Ver información regional</button></div>
+      </section>
+
+      <section class="trace section-shell">
+        <div><small>TRAZABILIDAD</small><h2>Información<br>por lote.</h2></div>
+        <ol><li><span>01</span><div><h3>Origen</h3><p>Municipio, finca, productor y altitud.</p></div></li><li><span>02</span><div><h3>Recolección</h3><p>Selección manual de cerezas maduras.</p></div></li><li><span>03</span><div><h3>Proceso</h3><p>Fermentación, secado y tueste documentados.</p></div></li><li><span>04</span><div><h3>Despacho</h3><p>Tueste en Pasto y despacho nacional.</p></div></li></ol>
+      </section>
+    }
+
+    @case ('catalogo') {
+      <section class="catalog-head section-shell"><p>Inventario varietal · Nariño</p><h1>Catálogo de<br>variedades.</h1><div class="catalog-intro"><p>Variedades con nombre explícito en fuentes oficiales o de producción rural verificable. Clasificación: tradicionales, mejoradas y especiales.</p><span>{{ coffees.length }} fichas · verificado el 12 de agosto de 2026</span></div><div class="filters" role="group" aria-label="Filtrar por familia varietal">@for (item of ['Todas', 'Tradicionales', 'Mejoradas', 'Especiales']; track item) { <button [class.active]="filter() === item" (click)="setFilter($any(item))">{{ item }}</button> }</div></section>
+      <section class="product-grid catalog-grid section-shell">
+        @for (coffee of filteredCoffees(); track coffee.id) {
+          <article class="product-card" (click)="openProduct(coffee)" tabindex="0">
+            <div class="product-image"><img [src]="coffee.image" [alt]="'Fotografía real de granos de café representativa de ' + coffee.name"><span>{{ coffee.group }}</span><button (click)="$event.stopPropagation(); addToCart(coffee)" [attr.aria-label]="'Agregar ' + coffee.name">+</button></div>
+            <div class="product-meta"><small>{{ coffee.municipality }} · {{ coffee.variety }}</small><h3>{{ coffee.name }}</h3><p>{{ coffee.notes.join(' · ') }}</p><div class="card-facts"><span>{{ coffee.plantType }}</span><span>{{ coffee.rustResistance }}</span></div><strong>{{ formatPrice(coffee.price) }}</strong></div>
+          </article>
+        }
+      </section>
+      <section class="catalog-note"><span>Alcance verificado</span><p>La unión de las fuentes consultadas identifica {{ coffees.length }} nombres. La cartilla oficial registra además 953,46 ha como “otras variedades”, sin desagregarlas; no se crean fichas sin un nombre comprobable. Los precios son referencias minoristas por 250 g, no valores de subasta.</p></section>
+      <section class="catalog-sources section-shell"><h2>Fuentes del inventario y precios</h2><div><a href="https://narino.gov.co/wp-content/uploads/2025/09/Cartilla-Catedra-Cafe.pdf" target="_blank" rel="noopener">Cartilla Cátedra Café · Gobernación de Nariño y FNC, 2025 ↗</a><a href="https://www.adr.gov.co/cafe-el-turpial-asociacion-de-caficultores-de-cafe-especial-de-cumbitara-coffee/" target="_blank" rel="noopener">Agencia de Desarrollo Rural · Café El Turpial ↗</a><a href="https://www.cenicafe.org/es/publications/VARIEDADES_%281%29.pdf" target="_blank" rel="noopener">Cenicafé · Variedades de café ↗</a><a href="https://cafe18.com.co/tienda/cafe-tostado/regionales/narino" target="_blank" rel="noopener">Café 18 · referencia Nariño 500 g ↗</a><a href="https://www.cafe18.com.co/tienda/cafe-tostado/varietales" target="_blank" rel="noopener">Café 18 · referencia de varietales 250 g ↗</a><a href="https://cafetipica.com/products/cafe-bourbon-rosado-lavado-250gr" target="_blank" rel="noopener">Típica · Bourbon Rosado Nariño 250 g ↗</a></div></section>
+    }
+
+    @case ('detalle') {
+      <section class="detail-shell">
+        <button class="back" (click)="navigate('catalogo')">← Volver a cafés</button>
+        <div class="detail-grid">
+          <div class="detail-image"><img [src]="selected().image" [alt]="'Granos de café representativos de ' + selected().name"><span>LOTE {{ selected().id.toString().padStart(2, '0') }} · 250 G</span></div>
+          <div class="detail-info">
+            <p>{{ selected().municipality }}, Nariño · {{ selected().group }}</p>
+            <h1>{{ selected().name }}</h1>
+            <div class="tasting">@for (note of selected().notes; track note) { <span>{{ note }}</span> }</div>
+            <p class="story">{{ selected().story }}</p>
+            <div class="purchase"><strong>{{ formatPrice(selected().price) }}</strong><button class="primary" (click)="addToCart(selected(), true)">Agregar a la bolsa <span>+</span></button></div>
+            <p class="shipping-line">Precio de referencia por 250 g · Despacho en 1–2 días hábiles</p>
+          </div>
+        </div>
+        <div class="detail-origin">
+          <div><small>FICHA DE TRAZABILIDAD</small><h2>Información<br>del producto.</h2><p class="template-note">Los campos marcados como “propuesta de lote” son demostrativos. La información botánica y regional se basa en la fuente indicada.</p></div>
+          <dl><div><dt>Nombre varietal</dt><dd>{{ selected().variety }}<small>{{ selected().species }} · {{ selected().group }}</small></dd></div><div><dt>Linaje / origen</dt><dd>{{ selected().lineage }}<small>Información botánica o histórica disponible</small></dd></div><div><dt>Planta</dt><dd>{{ selected().plantType }}<small>{{ selected().rustResistance }}</small></dd></div><div><dt>Presencia en Nariño</dt><dd>{{ selected().evidence }}<small>{{ selected().municipality }} · {{ selected().altitude }}</small></dd></div><div><dt>Lote / productor</dt><dd>{{ selected().farm }}<small>{{ selected().producer }}</small></dd></div><div><dt>Beneficio</dt><dd>{{ selected().process }}<small>{{ selected().harvest }} · {{ selected().drying }}</small></dd></div><div><dt>Tueste sugerido</dt><dd>{{ selected().roast }}<small>Perfil orientativo: {{ selected().notes.join(' · ') }}</small></dd></div><div><dt>Precio verificado</dt><dd>{{ formatPrice(selected().price) }}<small>{{ selected().priceBasis }} <a [href]="selected().priceSource" target="_blank" rel="noopener">Fuente ↗</a> · consulta: {{ selected().priceCheckedAt }}</small></dd></div><div><dt>Fotografía</dt><dd><a [href]="selected().imageSource" target="_blank" rel="noopener">{{ selected().imageCredit }} ↗</a><small>Fotografía real de granos. Es representativa del producto y no identifica visualmente el cultivar.</small></dd></div></dl>
+        </div>
+      </section>
+    }
+
+    @case ('origen') {
+      <section class="origin-hero"><img src="https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1800&q=90" alt="Café creciendo en una finca de montaña"><div><p>Nariño · Cordillera de los Andes</p><h1>Producción de café<br>de altura.</h1></div></section>
+      <section class="origin-story section-shell"><div><small>REGIÓN PRODUCTORA</small><h2>Condiciones<br>de cultivo.</h2></div><div><p>Nariño combina gran altitud, suelos volcánicos y alta amplitud térmica. Estas condiciones prolongan la maduración del fruto.</p><p>Los productores realizan recolección manual y separación por lotes para conservar la trazabilidad de cada cosecha.</p></div></section>
+      <section class="terrain-stats"><div><strong>1.700–2.200</strong><span>metros de altura</span></div><div><strong>18–22 °C</strong><span>temperatura media</span></div><div><strong>100%</strong><span>recolección manual</span></div></section>
+      <section class="producer section-shell"><div class="producer-photo"><img src="https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1200&q=88" alt="Manos trabajando con café"></div><div><small>MODELO DE ABASTECIMIENTO</small><h2>Compra<br>responsable.</h2><p>Priorizamos relaciones directas y precios diferenciados por calidad. Cada ficha identifica productor, recolección y proceso.</p><button class="primary" (click)="navigate('catalogo')">Ver microlotes →</button></div></section>
+    }
+
+    @case ('checkout') {
+      <section class="checkout-shell">
+        <button class="back" (click)="cartOpen.set(true)">← Volver a la bolsa</button>
+        <div class="checkout-title"><p>Pago seguro</p><h1>Finalizar compra.</h1></div>
+        <form #checkoutForm="ngForm" (ngSubmit)="pay(checkoutForm)" class="checkout-grid">
+          <div class="checkout-form">
+            <h2>1. Datos de envío</h2>
+            <div class="form-grid"><label class="wide">Nombre completo<input name="name" [(ngModel)]="shipping.name" required autocomplete="name"></label><label>Correo<input type="email" name="email" [(ngModel)]="shipping.email" required email autocomplete="email"></label><label>Celular<input name="phone" [(ngModel)]="shipping.phone" required autocomplete="tel"></label><label>Ciudad<select name="city" [(ngModel)]="shipping.city"><option>Pasto</option><option>Bogotá</option><option>Medellín</option><option>Cali</option><option>Otra ciudad</option></select></label><label>Dirección<input name="address" [(ngModel)]="shipping.address" required autocomplete="street-address"></label><label class="wide">Indicaciones de entrega <input name="notes" [(ngModel)]="shipping.notes" placeholder="Apto, barrio o referencia (opcional)"></label></div>
+            <h2>2. Medio de pago</h2>
+            <div class="payment-methods">@for (method of ['PSE', 'Tarjeta', 'Nequi']; track method) { <button type="button" [class.active]="paymentMethod() === method" (click)="paymentMethod.set($any(method))"><span class="radio"></span>{{ method }}<small>@switch (method) { @case ('PSE') { Débito bancario } @case ('Tarjeta') { Visa · Mastercard } @case ('Nequi') { Pago desde celular } }</small></button> }</div>
+            <p class="sandbox-note"><span>i</span> Entorno de demostración. El pago se habilita con las credenciales de Wompi.</p>
+          </div>
+          <aside class="order-summary"><h2>Tu pedido</h2>@for (line of cart(); track line.product.id) { <div class="summary-line"><img [src]="line.product.image" [alt]="line.product.name"><div><b>{{ line.product.name }}</b><span>250 g · {{ line.product.process }} · x{{ line.quantity }}</span></div><strong>{{ formatPrice(line.product.price * line.quantity) }}</strong></div> }<dl><div><dt>Subtotal</dt><dd>{{ formatPrice(subtotal()) }}</dd></div><div><dt>Envío</dt><dd>{{ shippingCost() ? formatPrice(shippingCost()) : 'Gratis' }}</dd></div><div class="total"><dt>Total</dt><dd>{{ formatPrice(total()) }}</dd></div></dl><button class="primary pay-button" type="submit" [disabled]="processing()">{{ processing() ? 'Procesando…' : 'Pagar con ' + paymentMethod() }} <span>→</span></button><p>Pagos cifrados y procesados por <b>Wompi</b></p></aside>
+        </form>
+      </section>
+    }
+
+    @case ('confirmacion') {
+      <section class="confirmation"><div class="confirmation-mark">✓</div><p>Pedido {{ orderNumber() }}</p><h1>Pedido<br>confirmado.</h1><p>La confirmación y la guía de despacho se enviarán al correo registrado.</p><button class="primary" (click)="navigate('inicio')">Volver al inicio →</button><div class="confirmation-details"><span>Preparación<small>1–2 días hábiles</small></span><span>Envío nacional<small>2–5 días hábiles</small></span><span>Soporte<small>hola&#64;sendacafe.co</small></span></div></section>
+    }
+  }
+</main>
+
+<footer>
+  <div class="footer-brand"><span class="brand-mark"><i></i><i></i></span><h2>SENDA<small>CAFÉ DE NARIÑO</small></h2></div>
+  <p>Café de especialidad de Nariño, tostado en Pasto y distribuido en Colombia.</p>
+  <div class="footer-links"><button (click)="navigate('catalogo')">Cafés</button><button (click)="navigate('origen')">Origen</button><button (click)="openAuth('login')">Mi cuenta</button><a href="mailto:hola@sendacafe.co">Contacto</a></div>
+  <div class="footer-bottom"><span>© 2026 Senda Café</span><span>Fotografías reales de Unsplash y Pexels</span><span>Pasto, Nariño · Colombia</span></div>
+</footer>
+
+<nav class="bottom-nav mobile-only" aria-label="Navegación móvil"><button [class.active]="view() === 'inicio'" (click)="navigate('inicio')"><svg viewBox="0 0 24 24"><path d="m3 11 9-8 9 8v10h-6v-6H9v6H3V11Z"/></svg><span>Inicio</span></button><button [class.active]="view() === 'catalogo'" (click)="navigate('catalogo')"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10"/></svg><span>Cafés</span></button><button (click)="cartOpen.set(true)"><svg viewBox="0 0 24 24"><path d="M6.5 8.5h11l1 12h-13l1-12ZM9 9V6a3 3 0 0 1 6 0v3"/></svg><span>Bolsa ({{ cartCount() }})</span></button><button (click)="user() ? logout() : openAuth('login')"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>{{ user() ? user() : 'Cuenta' }}</span></button></nav>
+
+@if (cartOpen()) {
+  <div class="overlay" (click)="cartOpen.set(false)"></div>
+  <aside class="cart-drawer" aria-label="Bolsa de compra">
+    <div class="drawer-head"><div><small>RESUMEN</small><h2>Bolsa ({{ cartCount() }})</h2></div><button class="close" (click)="cartOpen.set(false)" aria-label="Cerrar">×</button></div>
+    @if (cart().length) {
+      <div class="cart-lines">@for (line of cart(); track line.product.id) { <article><img [src]="line.product.image" [alt]="line.product.name"><div><small>{{ line.product.municipality }}</small><h3>{{ line.product.name }}</h3><p>250 g · {{ line.product.process }}</p><div class="quantity"><button (click)="updateQuantity(line.product.id, -1)">−</button><span>{{ line.quantity }}</span><button (click)="updateQuantity(line.product.id, 1)">+</button></div></div><strong>{{ formatPrice(line.product.price * line.quantity) }}</strong></article> }</div>
+      <div class="drawer-summary"><div><span>Subtotal</span><strong>{{ formatPrice(subtotal()) }}</strong></div><p>{{ shippingCost() ? 'Agrega ' + formatPrice(100000 - subtotal()) + ' para envío gratis' : 'Envío gratis aplicado' }}</p><button class="primary" (click)="goCheckout()">Continuar al pago <span>→</span></button><small>Impuestos incluidos · Pago procesado por Wompi</small></div>
+    } @else {
+      <div class="empty-cart"><span>○</span><h3>La bolsa está vacía.</h3><p>Agrega productos desde el catálogo.</p><button class="primary" (click)="navigate('catalogo')">Ver catálogo</button></div>
+    }
+  </aside>
+}
+
+@if (authOpen()) {
+  <div class="overlay" (click)="authOpen.set(false)"></div>
+  <section class="auth-modal">
+    <button class="close" (click)="authOpen.set(false)" aria-label="Cerrar">×</button>
+    <div class="auth-brand"><span class="brand-mark"><i></i><i></i></span><span>SENDA</span></div>
+    <p>{{ authMode() === 'login' ? 'Acceso de clientes' : 'Registro de clientes' }}</p>
+    <h2>{{ authMode() === 'login' ? 'Ingresar' : 'Crear cuenta' }}</h2>
+    <div class="auth-tabs"><button [class.active]="authMode() === 'login'" (click)="authMode.set('login')">Ingresar</button><button [class.active]="authMode() === 'signup'" (click)="authMode.set('signup')">Crear cuenta</button></div>
+    <form #authForm="ngForm" (ngSubmit)="submitAuth(authForm)">
+      @if (authMode() === 'signup') { <label>Nombre<input name="authName" [(ngModel)]="authName" required autocomplete="name" placeholder="Nombre completo"></label> }
+      <label>Correo<input type="email" name="authEmail" [(ngModel)]="authEmail" required email autocomplete="email" placeholder="tu@correo.com"></label>
+      <label>Contraseña<input type="password" name="authPassword" [(ngModel)]="authPassword" minlength="6" required autocomplete="current-password" placeholder="Mínimo 6 caracteres"></label>
+      <button class="primary" type="submit">{{ authMode() === 'login' ? 'Ingresar' : 'Crear mi cuenta' }} <span>→</span></button>
+    </form>
+    <small>Al continuar aceptas nuestra política de privacidad y tratamiento de datos.</small>
+  </section>
+}
+
+@if (toast()) { <div class="toast"><span>✓</span>{{ toast() }}</div> }
